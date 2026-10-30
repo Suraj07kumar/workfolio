@@ -10,7 +10,7 @@
 body{background:var(--bg);color:var(--ink);font:400 clamp(16px,1.15vw,18px)/1.6 var(--b);overflow-x:hidden;-webkit-font-smoothing:antialiased}
 a{color:inherit}:focus-visible{outline:2px solid var(--acc);outline-offset:4px}
 h1,h2,h3{font-family:var(--d);font-stretch:75%;line-height:.95;letter-spacing:-.02em}
-#stage{position:fixed;inset:0;height:var(--vh);z-index:20;background:radial-gradient(55% 55% at 50% 55%,rgba(255,255,255,.07),transparent 70%),linear-gradient(rgba(255,255,255,.05) 1px,transparent 1px) 0 0/60px 60px,linear-gradient(90deg,rgba(255,255,255,.05) 1px,transparent 1px) 0 0/60px 60px,#000}
+#stage{position:fixed;inset:0;z-index:20;background:radial-gradient(55% 55% at 50% 55%,rgba(255,255,255,.07),transparent 70%),linear-gradient(rgba(255,255,255,.05) 1px,transparent 1px) 0 0/60px 60px,linear-gradient(90deg,rgba(255,255,255,.05) 1px,transparent 1px) 0 0/60px 60px,#000}
 #gl{width:100%;height:100%;display:block}
 #intro{position:fixed;z-index:22;left:6vw;top:11vh;max-width:min(34ch,80vw);pointer-events:none}
 #intro b{display:block;font:800 clamp(52px,7.5vw,120px)/.9 var(--d);font-stretch:75%;letter-spacing:-.02em}
@@ -25,7 +25,7 @@ h1,h2,h3{font-family:var(--d);font-stretch:75%;line-height:.95;letter-spacing:-.
 #nav nav{display:flex;gap:clamp(.8rem,2.4vw,2rem);flex-wrap:wrap;justify-content:flex-end}
 #nav a{text-decoration:none;padding:4px 0;border-bottom:1px solid transparent}#nav a:hover{border-color:currentColor}
 .flat #stage,.flat #intro,.flat #cue,.flat #scr{display:none!important}.flat #nav{opacity:1;pointer-events:auto}
-section{position:relative}#bg{position:fixed;left:0;top:0;width:100%;height:var(--vh);z-index:0;pointer-events:none;opacity:0}
+section{position:relative}#bg{position:fixed;left:0;top:0;width:100%;height:100%;z-index:0;pointer-events:none;opacity:0}
 .about{min-height:var(--vh);padding:12vh 6vw 7vh;display:grid;grid-template-rows:auto 1fr auto;overflow:hidden}
 .orb{position:absolute;right:-8vmin;top:10vh;width:86vmin;aspect-ratio:1;perspective:1100px}.sys{position:absolute;inset:0;transform:rotateX(64deg) rotateZ(-18deg);transform-style:preserve-3d}
 .sun{position:absolute;left:50%;top:50%;width:11%;aspect-ratio:1;margin:-5.5% 0 0 -5.5%;border-radius:50%;background:radial-gradient(circle at 40% 40%,#fff,#bdbdbd 60%,#555);box-shadow:0 0 60px 20px rgba(255,255,255,.28),0 0 160px 60px rgba(255,255,255,.1);animation:pulse 4s ease-in-out infinite}
@@ -150,6 +150,12 @@ h2{font-size:clamp(44px,8vw,128px);font-weight:700}
 #edu>.row{grid-template-columns:auto 1fr;gap:1rem 3rem;align-items:center;padding:2.2rem 2.6rem;min-height:320px;max-width:1000px;margin-left:auto;margin-right:auto}
 #edu .big{font-size:clamp(88px,11vw,170px)}
 }
+@media (max-width:760px){
+.simple .gal .pin{padding-top:14vh}
+.simple .rs .pin{padding-top:12vh}.simple .cst{padding-bottom:5vh}
+.xps{padding:12vh 6vw 4vh}.edu{padding:10vh 6vw 2vh}.ldr{padding:10vh 6vw 14vh}
+.ct{min-height:var(--vh);padding:10vh 6vw}#contact{scroll-margin-top:-72px}
+}
 </style></head><body>
 <div id="stage"><canvas id="gl" aria-hidden="true"></canvas></div>
 <div id="intro" aria-hidden="true"><span class="eyebrow">Welcome</span><b>Hey there!</b><p id="ip">Loading the scene…</p></div>
@@ -262,14 +268,15 @@ function layout(){
  body.classList.toggle('simple',simple=mob.matches||rm.matches);
  document.documentElement.style.setProperty('--vh',H+'px');
  scr.style.width=W+'px';scr.style.height=H+'px';
- spacer.style.height=ready?HERO*H+'px':'0px';
+ spacer.style.height=ready?HP+'px':'0px';
  const g=$('#work'),t=$('.trk');g.style.height=simple?'':H+Math.max(0,t.scrollWidth-W)+'px';
  $('#skills').style.height=simple?'':H*3+'px';
 
 
  R3&&R3.LC&&plan();bgInit();starInit();
 }
-function size(){const w=document.documentElement.clientWidth,h=innerHeight;if(!W||w!==W||Math.abs(h-H)>120){W=w;H=h;layout()}dirty=true}
+let HP=0;function lite(){document.documentElement.style.setProperty('--vh',H+'px');scr.style.height=H+'px';R3&&R3.LC&&plan()}
+function size(){const w=document.documentElement.clientWidth,h=innerHeight;if(!W||w!==W||Math.abs(h-H)>160){W=w;H=h;HP=HERO*H;layout()}else if(h!==H){H=h;lite()}dirty=true}
 addEventListener('resize',size);addEventListener('scroll',()=>dirty=true,{passive:true});rm.addEventListener?.('change',()=>{W=0;size()});document.fonts?.ready.then(()=>{layout();dirty=true});addEventListener('load',()=>{layout();dirty=true});
 const prog=el=>{const r=el.getBoundingClientRect();return cl(-r.top/(r.height-H))};
 /* gallery: depth gallery driven by scroll */
@@ -321,10 +328,10 @@ $$('#nav nav a').forEach(a=>a.addEventListener('click',closeMenu));
 addEventListener('keydown',e=>{if(e.key==='Escape')closeMenu()});
 function frame(){
  const sy=scrollY;let p=1;
- if(ready){p=cl(sy/(HERO*H));const live=p<1;anim=live;stage.style.display=cue.style.display=live?'':'none';scr.style.visibility=live?'visible':'hidden';
+ if(ready){p=cl(sy/HP);const live=p<1;anim=live;stage.style.display=cue.style.display=live?'':'none';scr.style.visibility=live?'visible':'hidden';
   if(live){intro.style.display='';intro.style.opacity=1-sm(0,.14,p);cue.style.opacity=1-sm(0,.06,p);render3d(p)}else intro.style.display='none';
   nav.style.opacity=sm(.9,1,p);nav.classList.toggle('on',p>=.9)}
- const op=sm(0,.7*H,sy-(ready?HERO*H:0));bg.style.opacity=op;bgOn=op>.01&&!rm.matches&&!document.hidden;if(op>.01)bgDraw(sy);
+ const op=sm(0,.7*H,sy-(ready?HP:0));bg.style.opacity=op;bgOn=op>.01&&!rm.matches&&!document.hidden;if(op>.01)bgDraw(sy);
  {const r=ct.getBoundingClientRect(),vis=r.top<H&&r.bottom>0;stOn=vis&&!rm.matches;if(vis)starDraw(sm(.05,.7,(H-r.top)/H))}
  upd.forEach(f=>f())}
 (function loop(){if(dirty||anim||bgOn||stOn){dirty=false;frame()}requestAnimationFrame(loop)})();
